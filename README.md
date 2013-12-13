@@ -1,10 +1,11 @@
-== Installation
+# Installation
 
+`````bash
    sudo npm install modulojs -g
-   
+`````
 
-== Usage
-
+# Usage
+`````bash
    modulojs demoapp
-   
+`````
   
