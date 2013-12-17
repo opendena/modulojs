@@ -1,12 +1,14 @@
 {
   "name": "modulojs",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "ModuloJS is a toolset base to build modular NodeJS/Express application",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "opendena",
+  "author": {
+    "name": "opendena"
+  },
   "license": "BSD-2-Clause",
   "dependencies": {
     "commander": "1.0.5",
@@ -24,13 +26,17 @@
     "superagent-proxy": "0.0.1",
     "open": "0.0.4"
   },
-  "bin":{
-	"modulojs":"bin/modulojs"
+  "bin": {
+    "modulojs": "bin/modulojs"
   },
   "devDependencies": {
     "express": "3.0.0",
     "minstache": "0.0.1",
     "mocha": "*",
     "should": "*"
-  }
+  },
+  "readme": "ERROR: No README data found!",
+  "readmeFilename": "README.md",
+  "_id": "modulojs@0.0.2",
+  "_from": "modulojs@"
 }
