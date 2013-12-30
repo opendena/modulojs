@@ -1,6 +1,6 @@
 {
   "name": "modulojs",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "ModuloJS is a toolset base to build modular NodeJS/Express application",
   "main": "index.js",
   "scripts": {

@@ -51,6 +51,20 @@ var index = [
   , '};'
 ].join(eol);
 
+
+
+var viewMiddleware = [
+   ''
+  ,'var path = require(\'path\');'
+  ,'module.exports = function (app) {'
+  ,''
+  ,'      app.set(\'views\', path.join(__dirname, \'../../views\'));'
+  ,'      app.set(\'view engine\', \'jade\');'
+  ,''
+  ,'}'
+].join(eol);
+
+
 /**
  * Routes users template.
  */
@@ -195,84 +209,115 @@ var stylus = [
   , '  color: #00B7FF'
 ].join(eol);
 
+
+
 /**
  * App template.
  */
 
 var app = [
-  ''
+  ,' '
+  ,'/**  '
+  ,' * Module dependencies.  '
+  ,' */  '
+  ,' '
+  ,'var express = require(\'express\');  '
+  ,'var http = require(\'http\');  '
+  ,'var path = require(\'path\');  '
+  ,'var conf = require(\'modulojs-conf\');  '
+  ,' '
+  ,'// Dynamic loading of app\'s middleware  '
+  ,'var walk = function(server,path) { '
+  ,'      var fs = require("fs"); '
+  ,'      fs.readdirSync(path).forEach(function(file) { '
+  ,'         var newPath = path + \'/\' + file; '
+  ,'         var stat = fs.statSync(newPath); '
+  ,'         if (stat.isFile()) { '
+  ,'             if (/(.*).(js$|coffee$)/.test(file)) { '
+  ,'                 console.log("Initialise "+newPath); '
+  ,'                 require(newPath)(server); '
+  ,'             } '
+  ,'         } else if (stat.isDirectory()) { '
+  ,'             walk(server,newPath); '
+  ,'         } '
+  ,'     }); '
+  ,'}; '
+  ,'// Dynamic loading of app\'s middleware   '
+  ,'var loadModules = function(server,path,mode) { '
+  ,'      var fs = require("fs"); '
+  ,'      fs.readdirSync(path).forEach(function(file) { '
+  ,'         var newPath = path + \'/\' + file; '
+  ,'         var stat = fs.statSync(newPath); '
+  ,'         if (!stat.isFile()) { '
+  ,'             if (/modulojs-(.*)/.test(file)) { '
+  ,'                 switch(mode) { '
+  ,'                    case "conf": '
+  ,'                      var mod = require(file); '
+  ,'                      if ( mod.conf ){ '
+  ,'                        console.log("Init ["+mode+"] from  module ["+file+"]"); '
+  ,'                        mod.conf(server); '
+  ,'                      }else{ '
+  ,'                        console.log("Ignoring ["+mode+"] from module ["+file+"] no method."); '
+  ,'                      } '
+  ,'                      break; '
+  ,'                    default: '
+  ,'                      break; '
+  ,'                 } '
+  ,'             } '
+  ,'         } '
+  ,'     }); '
+  ,'}; '
   ,''
-  , '/** '
-  , ' * Module dependencies. '
-  , ' */ '
-  , ' '
-  , 'var express = require(\'express\'); '
-  , 'var http = require(\'http\'); '
-  , 'var path = require(\'path\'); '
-  , 'var nconf = require(\'nconf\'); '
-  , ' '
-  , 'module.exports = function (server) { '
-  , '     initApp(server); '
-  , '} '
-  , ' '
-  , ' '
-  , 'function initApp(app) { '
-  , ' '
-  , '// Dynamic loading of app\'s middleware '
-  , 'var walk = function(path) { '
-  , '     var fs = require("fs"); '
-  , '     fs.readdirSync(path).forEach(function(file) { '
-  , '        var newPath = path + \'/\' + file; '
-  , '        var stat = fs.statSync(newPath); '
-  , '        if (stat.isFile()) { '
-  , '            if (/(.*).(js$|coffee$)/.test(file)) { '
-  , '                console.log("Initialise "+newPath); '
-  , '                require(newPath)(app); '
-  , '            } '
-  , '        } else if (stat.isDirectory()) { '
-  , '            walk(newPath); '
-  , '        } '
-  , '    }); '
-  , '}; '
-  , '// Loading alls routes and middlewares '
-  , 'walk(__dirname+"/middlewares"); '
-  , ' '
-  , ' '
-  , '// development only '
-  , 'if (\'development\' == app.get(\'env\')) { '
-  , '  app.use(express.errorHandler()); '
-  , '} '
-  , ' '
-  , '} '
-  , ' '
-  , 'if(require.main === module) { '
-  , '        console.log("I\'m a main app... start listening"); '
-  , ' '
-  , 'var app = express(); '
-  , ' '
-  , '// all environments '
-  , 'app.set(\'port\', process.env.PORT || 3000); '
-  , 'app.set(\'views\', path.join(__dirname, \'views\')); '
-  , 'app.set(\'view engine\', \'jade\'); '
-  , 'app.use(express.cookieParser()); '
-  , 'app.use(express.session({ secret: \'dawn SomE SeCREt Ir.332436435353 ==<\' })); '
-  , 'app.use(express.favicon()); '
-  , 'app.use(express.urlencoded()); '
-  , 'app.use(express.methodOverride()); '
-  , ' '
-  , '// Loading alls routes and middlewares '
-  , 'initApp(app); '
-  , ' '
-  , '// loading configuration directory '
-  , 'nconf = require("nconf"); '
-  , 'nconf.file(__dirname+"/nconf/passport.json"); '
-  , 'app.nconf = nconf; '
-  , ' '
-  , 'http.createServer(app).listen(app.get(\'port\'), function(){ '
-  , '  console.log(\'Express server listening on port \' + app.get(\'port\')); '
-  , '}); '
-  , '} '
-  , ''
+  ,''
+  ,'var moduloJS = function(server) { '
+  ,'	return this; '
+  ,'} '
+  ,' '
+  ,' '
+  ,'moduloJS.conf = function(server) { '
+  ,'  // Loading alls routes and middlewares for installed modulojs\'s modules'
+  ,'  loadModules(server,__dirname+"/node_modules",\'conf\');'
+  ,'  // Loading alls routes and middlewares  '
+  ,'  walk(server,__dirname+"/conf"); '
+  ,'} '
+  ,' '
+  ,'moduloJS.beforeRouting = function(server) { '
+  ,'  // Loading alls routes and middlewares  '
+  ,'  walk(server,__dirname+"/middlewares/00-beforeRouting");  '
+  ,'}  '
+  ,' '
+  ,'moduloJS.routing = function(server){ '
+  ,'  walk(server,__dirname+"/middlewares/50-routing"); '
+  ,'} '
+  ,' '
+  ,'moduloJS.afterRouting = function(server){ '
+  ,'  walk(server,__dirname+"/middlewares/99-afterRouting"); '
+  ,'} '
+  ,' '
+  ,'  '
+  ,'if(require.main === module) {  '
+  ,'        console.log("I\'m a main app... start listening");  '
+  ,'  '
+  ,'	var app = express();  '
+  ,'        app.conf = conf; '
+  ,'	 '
+  ,'	app.set(\'port\', process.env.PORT || 3000);  '
+  ,'	// Loading alls routes and middlewares  '
+  ,'	moduloJS.conf(app);	 '
+  ,'	moduloJS.beforeRouting(app);  '
+  ,'	moduloJS.routing(app); '
+  ,' 	moduloJS.afterRouting(app); '
+  ,' '
+  ,'	app.use(app.router); '
+  ,' '
+  ,'	http.createServer(app).listen(app.get(\'port\'), function(){  '
+  ,'	  console.log(\'Express server listening on port \' + app.get(\'port\'));  '
+  ,'	});  '
+  ,'}  '
+  ,''
+  ,'//adding line so this app can be himself a module for another app'
+  ,'module.exports = moduloJS;'
+  ,''
 ].join(eol);
 
 // Generate application
@@ -330,15 +375,21 @@ function createApplicationAt(path) {
     });
 
 
-    mkdir(path + '/nconf');
+    mkdir(path + '/conf');
+    mkdir(path + '/conf/defaults');
 
     mkdir(path + '/middlewares', function(){
-      mkdir(path + '/middlewares/00-beforeRouting');
+
+      mkdir(path + '/middlewares/00-beforeRouting',function(){
+	   write(path+'/middlewares/00-beforeRouting/view-engine.js',viewMiddleware);
+      });
+
       mkdir(path + '/middlewares/50-routing',function(){
 	   write(path + '/middlewares/50-routing/index.js', index);
       });
+
       mkdir(path + '/middlewares/99-afterRouting');
-      //write(path + '/routes/user.js', users);
+
     });
 
     mkdir(path + '/views', function(){
@@ -388,7 +439,7 @@ function createApplicationAt(path) {
       , scripts: { start: 'node index.js' }
       , dependencies: {
         express: '*'
-        ,nconf: '*' 
+        ,"modulojs-conf": '*' 
       }
     }
 
