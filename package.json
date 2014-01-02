@@ -24,7 +24,8 @@
     "debug": "*",
     "rimraf": "~2.1.4",
     "superagent-proxy": "0.0.1",
-    "open": "0.0.4"
+    "open": "0.0.4",
+    "modulojs-conf": "*"
   },
   "bin": {
     "modulojs": "bin/modulojs"
