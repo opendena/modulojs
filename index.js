@@ -12,6 +12,44 @@ var conf = require('modulojs-conf');
 var moduloJS = function(server) { 
 	return this; 
 } 
+
+// Dynamic loading of app's middleware   
+moduloJS.loadModules = function(server,path,mode) {
+      var fs = require("fs");
+      fs.readdirSync(path).forEach(function(file) {
+         var newPath = path + '/' + file;
+         var stat = fs.statSync(newPath);
+         if (!stat.isFile()) {
+             if (/modulojs(.*)/.test(file)) {
+                 switch(mode) {
+                    case "conf":
+                      var mod = require(newPath);
+                      if ( mod.conf ){
+                        console.log("Init ["+mode+"] from  module ["+file+"]");
+                        mod.conf(server);
+                      }else{
+                        console.log("Ignoring ["+mode+"] from module ["+file+"] no method.");
+                      }
+                      break;
+                    case "routing":
+                      var mod = require(newPath);
+                      if ( mod.initMod ){
+                        console.log("Init ["+mode+"] from  module ["+file+"]");
+                        mod.initMod(server);
+                      }else{
+                        console.log("Ignoring ["+mode+"] from module ["+file+"] no method.");
+                      }
+                      break;
+                    default:
+                      throw new Exception('Unkown method','['+mode+']','for module ','['+path+']');
+		      break;
+                 }
+             }
+         }
+     });
+};
+
+
  
 moduloJS.conf = conf;
 moduloJS.configure = conf.configure;

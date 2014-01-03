@@ -85,8 +85,7 @@ var users = [
  */
 
 var jadeLayout = [
-    'doctype 5'
-  , 'html'
+   'html'
   , '  head'
   , '    title= title'
   , '    link(rel=\'stylesheet\', href=\'/stylesheets/style.css\')'
@@ -402,6 +401,7 @@ function createApplicationAt(path) {
       , scripts: { start: 'node index.js' }
       , dependencies: {
         express: '*'
+        ,modulojs: '*'
         ,"modulojs-conf": '*' 
       }
     }
